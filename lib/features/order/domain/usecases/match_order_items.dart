@@ -41,81 +41,23 @@ class MatchOrderItems implements UseCase<List<MatchedOrderItem>, MatchOrderParam
   Product? _findMatchingProduct(String orderItemName, List<Product> products) {
     final normalizedOrderName = _normalizeText(orderItemName);
 
-    // Próba 1: Dokładne dopasowanie
-    try {
-      return products.firstWhere((p) => _normalizeText(p.title) == normalizedOrderName);
-    } catch (e) {}
-
-    // Próba 2: Dopasowanie po usunięciu końcówki liczby mnogiej
-    final singularOrderName = _removePluralSuffix(normalizedOrderName);
-    try {
-      return products.firstWhere((p) {
-        final productName = _normalizeText(p.title);
-        final singularProductName = _removePluralSuffix(productName);
-
-        return singularProductName == singularOrderName || productName == singularOrderName;
-      });
-    } catch (e) {}
-
-    try {
-      // Znajdź najdłuższe dopasowanie (aby "Apple AirPods" nie matchowało z samym "Apple")
-      Product? bestMatch;
-      int longestMatchLength = 0;
-
-      for (var product in products) {
-        final productName = _normalizeText(product.title);
-        final singularProductName = _removePluralSuffix(productName);
-
-        // Sprawdź czy zamówienie zawiera nazwę produktu
-        if (normalizedOrderName.contains(productName) ||
-            normalizedOrderName.contains(singularProductName) ||
-            singularOrderName.contains(productName) ||
-            singularOrderName.contains(singularProductName)) {
-          // Wybierz najdłuższe dopasowanie
-          final matchLength = productName.length;
-          if (matchLength > longestMatchLength) {
-            longestMatchLength = matchLength;
-            bestMatch = product;
-          }
-        }
+    // Szukaj DOKŁADNEGO dopasowania (case-insensitive)
+    for (var product in products) {
+      if (_normalizeText(product.title) == normalizedOrderName) {
+        return product;
       }
+    }
 
-      if (bestMatch != null) return bestMatch;
-    } catch (e) {}
+    // Jeśli nie znaleziono dokładnego, spróbuj z usuniętą liczbą mnogą
+    final singularOrderName = _removePluralSuffix(normalizedOrderName);
+    for (var product in products) {
+      final singularProductName = _removePluralSuffix(_normalizeText(product.title));
+      if (singularProductName == singularOrderName) {
+        return product;
+      }
+    }
 
-    // Próba 4: Dopasowanie na podstawie wszystkich znaczących słów
-    final orderWords = normalizedOrderName.split(' ').where((w) => w.length > 2).toList();
-
-    if (orderWords.isEmpty) return null;
-
-    try {
-      return products.firstWhere((p) {
-        final productName = _normalizeText(p.title);
-        final productWords = productName.split(' ').where((w) => w.length > 2).toList();
-
-        if (productWords.isEmpty) return false;
-
-        // Wszystkie słowa produktu muszą znaleźć się w zamówieniu
-        int productWordsMatched = 0;
-        for (var productWord in productWords) {
-          final singularProductWord = _removePluralSuffix(productWord);
-          for (var orderWord in orderWords) {
-            final singularOrderWord = _removePluralSuffix(orderWord);
-            if (singularProductWord == singularOrderWord ||
-                productWord == orderWord ||
-                (productWord.length > 3 && orderWord.contains(productWord)) ||
-                (orderWord.length > 3 && productWord.contains(orderWord))) {
-              productWordsMatched++;
-              break;
-            }
-          }
-        }
-
-        // Wymagane dopasowanie co najmniej wszystkich słów produktu
-        return productWordsMatched == productWords.length && productWords.isNotEmpty;
-      });
-    } catch (e) {}
-
+    // Nic nie pasuje - zwróć null
     return null;
   }
 

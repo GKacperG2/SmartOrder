@@ -12,10 +12,24 @@ class ProductsPage extends StatefulWidget {
 }
 
 class _ProductsPageState extends State<ProductsPage> {
+  final TextEditingController _searchController = TextEditingController();
+  String _searchQuery = '';
+
   @override
   void initState() {
     super.initState();
     BlocProvider.of<ProductsBloc>(context).add(GetProductsEvent());
+    _searchController.addListener(() {
+      setState(() {
+        _searchQuery = _searchController.text.toLowerCase();
+      });
+    });
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
   }
 
   @override
@@ -27,12 +41,44 @@ class _ProductsPageState extends State<ProductsPage> {
           if (state is ProductsLoading) {
             return const Center(child: CircularProgressIndicator());
           } else if (state is ProductsLoaded) {
-            return ListView.builder(
-              itemCount: state.products.length,
-              itemBuilder: (context, index) {
-                final product = state.products[index];
-                return ListTile(title: Text(product.title), subtitle: Text('\$${product.price}'));
-              },
+            // Filtrowanie produktów
+            final filteredProducts = state.products.where((product) {
+              return product.title.toLowerCase().contains(_searchQuery);
+            }).toList();
+
+            return Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: TextField(
+                    controller: _searchController,
+                    decoration: const InputDecoration(
+                      labelText: 'Szukaj produktu',
+                      prefixIcon: Icon(Icons.search),
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+                ),
+                Expanded(
+                  child: filteredProducts.isEmpty
+                      ? const Center(
+                          child: Text(
+                            'Nie znaleziono produktów',
+                            style: TextStyle(fontSize: 16, color: Colors.grey),
+                          ),
+                        )
+                      : ListView.builder(
+                          itemCount: filteredProducts.length,
+                          itemBuilder: (context, index) {
+                            final product = filteredProducts[index];
+                            return ListTile(
+                              title: Text(product.title),
+                              subtitle: Text('\$${product.price}'),
+                            );
+                          },
+                        ),
+                ),
+              ],
             );
           } else if (state is ProductsError) {
             return Center(
