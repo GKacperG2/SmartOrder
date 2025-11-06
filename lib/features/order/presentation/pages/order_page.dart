@@ -194,7 +194,7 @@ class _OrderPageState extends State<OrderPage> {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
       decoration: const BoxDecoration(
-        border: Border(bottom: BorderSide(color: Colors.grey.shade200)),
+        border: Border(bottom: BorderSide(color: Colors.grey)),
       ),
       child: Row(
         children: [
