@@ -140,7 +140,7 @@ class _OrderPageState extends State<OrderPage> {
         ),
         const SizedBox(height: 16),
         Text(
-          'Total: \$${total.toStringAsFixed(2)}',
+          'Suma całkowita: \$${total.toStringAsFixed(2)}',
           style: Theme.of(context).textTheme.headlineSmall,
           textAlign: TextAlign.right,
         ),
@@ -172,7 +172,7 @@ class _OrderPageState extends State<OrderPage> {
           Expanded(
             flex: 2,
             child: Text(
-              'Cena jedn.',
+              'Cena jednostkowa',
               textAlign: TextAlign.right,
               style: TextStyle(fontWeight: FontWeight.bold),
             ),
