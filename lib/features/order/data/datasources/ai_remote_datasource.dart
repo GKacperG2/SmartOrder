@@ -25,12 +25,12 @@ class AiRemoteDataSourceImpl implements AiRemoteDataSource {
     final headers = {'Authorization': 'Bearer $apiKey', 'Content-Type': 'application/json'};
 
     final body = {
-      'model': 'openai/gpt-3.5-turbo',
+      'model': 'openai/gpt-oss-safeguard-20b',
       'messages': [
         {
           'role': 'system',
           'content':
-              "You are an expert in parsing order details. Extract product names and quantities from the user's text. Return the result as a JSON array of objects, where each object has 'name' and 'quantity' fields. For example: [{\"name\": \"iPhone 9\", \"quantity\": 2}]",
+              "You are an expert in parsing order details from text in any language (English, Polish, etc.). Extract product names and quantities. Return ONLY a valid JSON array of objects, where each object has 'name' (string) and 'quantity' (number) fields. Do not include any other text or explanation, only the JSON array. Example: [{\"name\": \"iPhone 9\", \"quantity\": 2}, {\"name\": \"eggs\", \"quantity\": 10}]",
         },
         {'role': 'user', 'content': text},
       ],
