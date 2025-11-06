@@ -43,48 +43,62 @@ class MatchOrderItems implements UseCase<List<MatchedOrderItem>, MatchOrderParam
       return products.firstWhere((p) => _normalizeText(p.title) == normalizedOrderName);
     } catch (e) {}
 
-    // Próba 2: Dopasowanie zawierające
-    try {
-      return products.firstWhere(
-        (p) =>
-            _normalizeText(p.title).contains(normalizedOrderName) ||
-            normalizedOrderName.contains(_normalizeText(p.title)),
-      );
-    } catch (e) {}
-
-    // Próba 3: Dopasowanie po usunięciu końcówki liczby mnogiej
+    // Próba 2: Dopasowanie po usunięciu końcówki liczby mnogiej
     final singularOrderName = _removePluralSuffix(normalizedOrderName);
     try {
       return products.firstWhere((p) {
         final productName = _normalizeText(p.title);
         final singularProductName = _removePluralSuffix(productName);
 
-        return singularProductName == singularOrderName ||
-            productName.contains(singularOrderName) ||
-            singularOrderName.contains(productName) ||
-            productName.contains(singularProductName) ||
-            singularProductName.contains(singularOrderName);
+        return singularProductName == singularOrderName || productName == singularOrderName;
       });
     } catch (e) {}
 
-    // Próba 4: Dopasowanie na podstawie słów kluczowych
-    final orderWords = normalizedOrderName.split(' ');
+    // Próba 3: Dopasowanie zawierające (nazwa produktu zawiera się w zamówieniu lub odwrotnie)
     try {
       return products.firstWhere((p) {
         final productName = _normalizeText(p.title);
-        final productWords = productName.split(' ');
+        final singularProductName = _removePluralSuffix(productName);
 
-        // Sprawdź czy co najmniej 2 słowa się zgadzają lub wszystkie słowa produktu są w zamówieniu
-        int matchCount = 0;
+        return productName.contains(normalizedOrderName) ||
+            normalizedOrderName.contains(productName) ||
+            productName.contains(singularOrderName) ||
+            singularOrderName.contains(productName) ||
+            singularProductName.contains(singularOrderName) ||
+            singularOrderName.contains(singularProductName);
+      });
+    } catch (e) {}
+
+    // Próba 4: Dopasowanie na podstawie wszystkich znaczących słów
+    final orderWords = normalizedOrderName.split(' ').where((w) => w.length > 2).toList();
+
+    if (orderWords.isEmpty) return null;
+
+    try {
+      return products.firstWhere((p) {
+        final productName = _normalizeText(p.title);
+        final productWords = productName.split(' ').where((w) => w.length > 2).toList();
+
+        if (productWords.isEmpty) return false;
+
+        // Wszystkie słowa produktu muszą znaleźć się w zamówieniu
+        int productWordsMatched = 0;
         for (var productWord in productWords) {
-          if (orderWords.any(
-            (orderWord) => orderWord.contains(productWord) || productWord.contains(orderWord),
-          )) {
-            matchCount++;
+          final singularProductWord = _removePluralSuffix(productWord);
+          for (var orderWord in orderWords) {
+            final singularOrderWord = _removePluralSuffix(orderWord);
+            if (singularProductWord == singularOrderWord ||
+                productWord == orderWord ||
+                (productWord.length > 3 && orderWord.contains(productWord)) ||
+                (orderWord.length > 3 && productWord.contains(orderWord))) {
+              productWordsMatched++;
+              break;
+            }
           }
         }
 
-        return matchCount >= productWords.length || matchCount >= 2;
+        // Wymagane dopasowanie co najmniej wszystkich słów produktu
+        return productWordsMatched == productWords.length && productWords.length >= 1;
       });
     } catch (e) {}
 
