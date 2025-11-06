@@ -30,7 +30,7 @@ class AiRemoteDataSourceImpl implements AiRemoteDataSource {
         {
           'role': 'system',
           'content':
-              "You are an expert in parsing order details from text in any language (English, Polish, etc.). Extract product names and quantities. Return ONLY pure JSON array, nothing else. The JSON must be a valid array of objects with 'name' (string) and 'quantity' (number) fields. Format: [{\"name\": \"product name\", \"quantity\": number}]",
+              "You are an expert in parsing order details from text in any language. Extract COMPLETE product names and their quantities. Important: Keep full product names together (e.g., 'Apple AirPods', not just 'Apple'). Return ONLY pure JSON array with this exact structure: [{\"name\": \"complete product name\", \"quantity\": number}]. No additional text, only the JSON array.",
         },
         {'role': 'user', 'content': text},
       ],
