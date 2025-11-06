@@ -72,7 +72,7 @@ class _OrderPageState extends State<OrderPage> {
               ),
             );
           }
-          
+
           // Pokazuj loading podczas ładowania produktów
           if (productsState is ProductsLoading) {
             return Center(
