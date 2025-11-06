@@ -7,6 +7,7 @@ import 'package:smartorder/features/order/presentation/bloc/order_bloc.dart';
 import 'package:smartorder/features/order/presentation/bloc/order_event.dart';
 import 'package:smartorder/features/order/presentation/bloc/order_state.dart';
 import 'package:smartorder/features/products/presentation/bloc/products_bloc.dart';
+import 'package:smartorder/features/products/presentation/bloc/products_event.dart';
 import 'package:smartorder/features/products/presentation/bloc/products_state.dart';
 
 class OrderPage extends StatefulWidget {
@@ -42,82 +43,139 @@ class _OrderPageState extends State<OrderPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Order')),
-      body: BlocConsumer<OrderBloc, OrderState>(
-        listener: (context, state) {
-          if (state is OrderError) {
-            ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(state.message)));
-          } else if (state is OrderAnalyzed) {
-            setState(() {
-              _matchedItems = state.matchedItems;
-              _filteredItems = state.matchedItems;
-            });
+      body: BlocBuilder<ProductsBloc, ProductsState>(
+        builder: (context, productsState) {
+          // Pokazuj błąd produktów na początku
+          if (productsState is ProductsError) {
+            return Center(
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.error_outline, size: 64, color: Colors.red),
+                    SizedBox(height: 16),
+                    Text(
+                      productsState.message,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(fontSize: 16),
+                    ),
+                    SizedBox(height: 24),
+                    ElevatedButton(
+                      onPressed: () {
+                        BlocProvider.of<ProductsBloc>(context).add(GetProductsEvent());
+                      },
+                      child: Text('Spróbuj ponownie'),
+                    ),
+                  ],
+                ),
+              ),
+            );
           }
-        },
-        builder: (context, state) {
-          return Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              children: [
-                TextField(
-                  controller: _textController,
-                  maxLines: 5,
-                  decoration: const InputDecoration(
-                    hintText: 'Paste your order here...',
-                    border: OutlineInputBorder(),
-                  ),
-                ),
-                const SizedBox(height: 16),
-                BlocBuilder<ProductsBloc, ProductsState>(
-                  builder: (context, productsState) {
-                    if (productsState is ProductsLoaded) {
-                      return ElevatedButton(
-                        onPressed: () {
-                          final orderText = _textController.text;
-                          if (orderText.isNotEmpty) {
-                            BlocProvider.of<OrderBloc>(context).add(
-                              AnalyzeOrderEvent(
-                                orderText: orderText,
-                                products: productsState.products,
-                              ),
-                            );
-                          }
-                        },
-                        child: const Text('Analyze Order'),
-                      );
-                    }
-                    return const ElevatedButton(
-                      onPressed: null,
-                      child: Text('Analyze Order (Loading Products...)'),
-                    );
-                  },
-                ),
-                const SizedBox(height: 16),
-                if (state is OrderLoading)
-                  const CircularProgressIndicator()
-                else if (state is OrderAnalyzed)
-                  Expanded(
-                    child: Column(
-                      children: [
-                        TextField(
-                          controller: _searchController,
-                          decoration: const InputDecoration(
-                            hintText: 'Search products...',
-                            border: OutlineInputBorder(),
-                            prefixIcon: Icon(Icons.search),
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-                        Expanded(child: _buildResultList(_filteredItems, state.total)),
-                        const SizedBox(height: 16),
-                        ElevatedButton(
-                          onPressed: () => _exportToJson(context, _matchedItems),
-                          child: const Text('Export to JSON'),
-                        ),
-                      ],
+          
+          // Pokazuj loading podczas ładowania produktów
+          if (productsState is ProductsLoading) {
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  CircularProgressIndicator(),
+                  SizedBox(height: 16),
+                  Text('Ładowanie produktów...'),
+                ],
+              ),
+            );
+          }
+
+          return BlocConsumer<OrderBloc, OrderState>(
+            listener: (context, state) {
+              if (state is OrderError) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                    content: Text(state.message),
+                    backgroundColor: Colors.red,
+                    duration: Duration(seconds: 5),
+                    action: SnackBarAction(
+                      label: 'Zamknij',
+                      textColor: Colors.white,
+                      onPressed: () {},
                     ),
                   ),
-              ],
-            ),
+                );
+              } else if (state is OrderAnalyzed) {
+                setState(() {
+                  _matchedItems = state.matchedItems;
+                  _filteredItems = state.matchedItems;
+                });
+              }
+            },
+            builder: (context, state) {
+              return Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  children: [
+                    TextField(
+                      controller: _textController,
+                      maxLines: 5,
+                      decoration: const InputDecoration(
+                        hintText: 'Paste your order here...',
+                        border: OutlineInputBorder(),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    BlocBuilder<ProductsBloc, ProductsState>(
+                      builder: (context, productsState) {
+                        if (productsState is ProductsLoaded) {
+                          return ElevatedButton(
+                            onPressed: () {
+                              final orderText = _textController.text;
+                              if (orderText.isNotEmpty) {
+                                BlocProvider.of<OrderBloc>(context).add(
+                                  AnalyzeOrderEvent(
+                                    orderText: orderText,
+                                    products: productsState.products,
+                                  ),
+                                );
+                              }
+                            },
+                            child: const Text('Analyze Order'),
+                          );
+                        }
+                        return const ElevatedButton(
+                          onPressed: null,
+                          child: Text('Analyze Order (Loading Products...)'),
+                        );
+                      },
+                    ),
+                    const SizedBox(height: 16),
+                    if (state is OrderLoading)
+                      const CircularProgressIndicator()
+                    else if (state is OrderAnalyzed)
+                      Expanded(
+                        child: Column(
+                          children: [
+                            TextField(
+                              controller: _searchController,
+                              decoration: const InputDecoration(
+                                hintText: 'Search products...',
+                                border: OutlineInputBorder(),
+                                prefixIcon: Icon(Icons.search),
+                              ),
+                            ),
+                            const SizedBox(height: 16),
+                            Expanded(child: _buildResultList(_filteredItems, state.total)),
+                            const SizedBox(height: 16),
+                            ElevatedButton(
+                              onPressed: () => _exportToJson(context, _matchedItems),
+                              child: const Text('Export to JSON'),
+                            ),
+                          ],
+                        ),
+                      ),
+                  ],
+                ),
+              );
+            },
           );
         },
       ),

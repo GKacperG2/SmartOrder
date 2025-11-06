@@ -42,13 +42,15 @@ class OrderBloc extends Bloc<OrderEvent, OrderState> {
 
   String _mapFailureToMessage(Failure failure) {
     if (failure is ServerFailure) {
-      return 'Server Failure';
+      return failure.message;
     } else if (failure is NetworkFailure) {
-      return 'Network Failure';
+      return failure.message;
     } else if (failure is AiFailure) {
+      return 'Błąd AI: ${failure.message}';
+    } else if (failure is CacheFailure) {
       return failure.message;
     } else {
-      return 'Unexpected error';
+      return 'Nieoczekiwany błąd. Spróbuj ponownie.';
     }
   }
 }

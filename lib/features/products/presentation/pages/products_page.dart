@@ -35,7 +35,30 @@ class _ProductsPageState extends State<ProductsPage> {
               },
             );
           } else if (state is ProductsError) {
-            return Center(child: Text(state.message));
+            return Center(
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.error_outline, size: 64, color: Colors.red),
+                    SizedBox(height: 16),
+                    Text(
+                      state.message,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(fontSize: 16),
+                    ),
+                    SizedBox(height: 24),
+                    ElevatedButton(
+                      onPressed: () {
+                        BlocProvider.of<ProductsBloc>(context).add(GetProductsEvent());
+                      },
+                      child: Text('Spróbuj ponownie'),
+                    ),
+                  ],
+                ),
+              ),
+            );
           }
           return const Center(child: Text('Press the button to fetch products'));
         },

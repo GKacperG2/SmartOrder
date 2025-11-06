@@ -20,13 +20,14 @@ class ProductsBloc extends Bloc<ProductsEvent, ProductsState> {
   }
 
   String _mapFailureToMessage(Failure failure) {
-    switch (failure.runtimeType) {
-      case ServerFailure:
-        return 'Server Failure';
-      case NetworkFailure:
-        return 'Network Failure';
-      default:
-        return 'Unexpected error';
+    if (failure is ServerFailure) {
+      return failure.message;
+    } else if (failure is NetworkFailure) {
+      return failure.message;
+    } else if (failure is CacheFailure) {
+      return failure.message;
+    } else {
+      return 'Nieoczekiwany błąd. Spróbuj ponownie.';
     }
   }
 }
