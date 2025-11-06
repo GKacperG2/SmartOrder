@@ -45,6 +45,7 @@ class AiRemoteDataSourceImpl implements AiRemoteDataSource {
 
       if (response.statusCode == 200) {
         final content = response.data['choices'][0]['message']['content'];
+        print('AI Response: $content'); // DEBUG: sprawdźmy co AI zwraca
         final decoded = jsonDecode(content) as List;
         return decoded.map((item) => OrderItemModel.fromJson(item)).toList();
       } else {

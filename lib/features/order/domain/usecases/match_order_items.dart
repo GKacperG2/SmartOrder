@@ -11,9 +11,11 @@ class MatchOrderItems implements UseCase<List<MatchedOrderItem>, MatchOrderParam
   Future<Either<Failure, List<MatchedOrderItem>>> call(MatchOrderParams params) async {
     final matchedItems = <MatchedOrderItem>[];
     for (var orderItem in params.orderItems) {
+      print('Trying to match: "${orderItem.name}"'); // DEBUG
       Product? foundProduct = _findMatchingProduct(orderItem.name, params.products);
 
       if (foundProduct != null) {
+        print('  -> Matched with: "${foundProduct.title}"'); // DEBUG
         matchedItems.add(
           MatchedOrderItem(
             product: foundProduct,
@@ -23,6 +25,7 @@ class MatchOrderItems implements UseCase<List<MatchedOrderItem>, MatchOrderParam
           ),
         );
       } else {
+        print('  -> NOT MATCHED'); // DEBUG
         matchedItems.add(
           MatchedOrderItem(
             name: orderItem.name,
