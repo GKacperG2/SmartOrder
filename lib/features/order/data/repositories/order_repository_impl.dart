@@ -27,4 +27,20 @@ class OrderRepositoryImpl implements OrderRepository {
       return const Left(NetworkFailure());
     }
   }
+
+  @override
+  Future<Either<Failure, void>> validateApiKey() async {
+    if (await networkInfo.isConnected) {
+      try {
+        await remoteDataSource.validateApiKey();
+        return const Right(null);
+      } on AiException catch (e) {
+        return Left(AiFailure(e.message));
+      } on ServerException {
+        return const Left(ServerFailure());
+      }
+    } else {
+      return const Left(NetworkFailure());
+    }
+  }
 }

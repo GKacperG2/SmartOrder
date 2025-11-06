@@ -6,6 +6,8 @@ import 'package:smartorder/features/order/data/repositories/order_repository_imp
 import 'package:smartorder/features/order/domain/repositories/order_repository.dart';
 import 'package:smartorder/features/order/domain/usecases/analyze_order_text.dart';
 import 'package:smartorder/features/order/domain/usecases/match_order_items.dart';
+import 'package:smartorder/features/order/domain/usecases/validate_api_key.dart';
+import 'package:smartorder/features/order/presentation/bloc/api_validation_bloc.dart';
 import 'package:smartorder/features/order/presentation/bloc/order_bloc.dart';
 import 'package:smartorder/features/products/data/datasources/product_remote_datasource.dart';
 import 'package:smartorder/features/products/data/repositories/product_repository_impl.dart';
@@ -27,8 +29,10 @@ Future<void> init() async {
 
   // Order
   sl.registerFactory(() => OrderBloc(analyzeOrderText: sl(), matchOrderItems: sl()));
+  sl.registerFactory(() => ApiValidationBloc(validateApiKey: sl()));
   sl.registerLazySingleton(() => AnalyzeOrderText(sl()));
   sl.registerLazySingleton(() => MatchOrderItems());
+  sl.registerLazySingleton(() => ValidateApiKey(sl()));
   sl.registerLazySingleton<OrderRepository>(
     () => OrderRepositoryImpl(remoteDataSource: sl(), networkInfo: sl()),
   );

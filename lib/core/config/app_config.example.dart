@@ -4,3 +4,5 @@ class AppConfig {
     defaultValue: 'YOUR_API_KEY_HERE',
   );
 }
+
+// Change the name of file to app_config.dart and replace the defaultValue with your actual API key.

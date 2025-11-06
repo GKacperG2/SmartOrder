@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:smartorder/features/order/presentation/bloc/api_validation_bloc.dart';
+import 'package:smartorder/features/order/presentation/bloc/api_validation_event.dart';
+import 'package:smartorder/features/order/presentation/bloc/api_validation_state.dart';
 import 'package:smartorder/features/order/presentation/bloc/order_bloc.dart';
 import 'package:smartorder/features/order/presentation/pages/order_page.dart';
 import 'package:smartorder/features/products/presentation/bloc/products_bloc.dart';
@@ -21,6 +24,7 @@ class MyApp extends StatelessWidget {
       providers: [
         BlocProvider(create: (_) => di.sl<ProductsBloc>()),
         BlocProvider(create: (_) => di.sl<OrderBloc>()),
+        BlocProvider(create: (_) => di.sl<ApiValidationBloc>()),
       ],
       child: MaterialApp(
         title: 'Smart Order',
@@ -43,6 +47,15 @@ class _HomePageState extends State<HomePage> {
 
   static const List<Widget> _widgetOptions = <Widget>[ProductsPage(), OrderPage()];
 
+  @override
+  void initState() {
+    super.initState();
+    // Sprawdź klucz API przy starcie
+    Future.microtask(() {
+      context.read<ApiValidationBloc>().add(ValidateApiKeyEvent());
+    });
+  }
+
   void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
@@ -52,7 +65,37 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Center(child: _widgetOptions.elementAt(_selectedIndex)),
+      body: BlocListener<ApiValidationBloc, ApiValidationState>(
+        listener: (context, state) {
+          if (state is ApiValidationInvalid) {
+            // Pokaż komunikat o błędnym kluczu API
+            showDialog(
+              context: context,
+              barrierDismissible: false,
+              builder: (context) => AlertDialog(
+                title: const Row(
+                  children: [
+                    Icon(Icons.error, color: Colors.red),
+                    SizedBox(width: 8),
+                    Text('Błąd klucza API'),
+                  ],
+                ),
+                content: Text(state.message),
+                actions: [
+                  TextButton(
+                    onPressed: () {
+                      Navigator.pop(context);
+                      context.read<ApiValidationBloc>().add(ValidateApiKeyEvent());
+                    },
+                    child: const Text('Spróbuj ponownie'),
+                  ),
+                ],
+              ),
+            );
+          }
+        },
+        child: Center(child: _widgetOptions.elementAt(_selectedIndex)),
+      ),
       bottomNavigationBar: BottomNavigationBar(
         items: const <BottomNavigationBarItem>[
           BottomNavigationBarItem(icon: Icon(Icons.list), label: 'Products'),

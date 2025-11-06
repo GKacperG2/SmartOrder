@@ -6,6 +6,7 @@ import 'package:smartorder/features/order/data/models/order_item_model.dart';
 
 abstract class AiRemoteDataSource {
   Future<List<OrderItemModel>> analyzeOrderText(String text);
+  Future<void> validateApiKey();
 }
 
 class AiRemoteDataSourceImpl implements AiRemoteDataSource {
@@ -53,6 +54,43 @@ class AiRemoteDataSourceImpl implements AiRemoteDataSource {
       }
     } on DioException catch (e) {
       throw AiException(e.message ?? 'AI service error');
+    }
+  }
+
+  @override
+  Future<void> validateApiKey() async {
+    const url = 'https://openrouter.ai/api/v1/chat/completions';
+    const apiKey = AppConfig.openRouterApiKey;
+
+    if (apiKey.isEmpty) {
+      throw AiException('Klucz API jest pusty. Skonfiguruj go w pliku app_config.dart');
+    }
+
+    final headers = {'Authorization': 'Bearer $apiKey', 'Content-Type': 'application/json'};
+
+    final body = {
+      'model': 'openai/gpt-oss-safeguard-20b',
+      'messages': [
+        {'role': 'user', 'content': 'test'},
+      ],
+      'max_tokens': 1,
+    };
+
+    try {
+      final response = await dio.post(
+        url,
+        data: jsonEncode(body),
+        options: Options(headers: headers),
+      );
+
+      if (response.statusCode != 200) {
+        throw AiException('Nieprawidłowy klucz API. Sprawdź konfigurację.');
+      }
+    } on DioException catch (e) {
+      if (e.response?.statusCode == 401) {
+        throw AiException('Nieprawidłowy klucz API. Sprawdź konfigurację.');
+      }
+      throw AiException(e.message ?? 'Błąd połączenia z API');
     }
   }
 }
