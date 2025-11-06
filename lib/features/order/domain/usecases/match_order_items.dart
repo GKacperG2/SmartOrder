@@ -57,17 +57,18 @@ class MatchOrderItems implements UseCase<List<MatchedOrderItem>, MatchOrderParam
       });
     } catch (e) {}
 
-    // Próba 3: Dopasowanie zawierające (nazwa produktu zawiera się w zamówieniu lub odwrotnie)
+    // Próba 3: Produkt zawiera się w zamówieniu (NIE odwrotnie!)
+    // Przykład: "Apple AirPods" w zamówieniu powinno znaleźć produkt "Apple AirPods" w bazie
+    // ALE NIE powinno znaleźć samego "Apple"
     try {
       return products.firstWhere((p) {
         final productName = _normalizeText(p.title);
         final singularProductName = _removePluralSuffix(productName);
 
-        return productName.contains(normalizedOrderName) ||
-            normalizedOrderName.contains(productName) ||
-            productName.contains(singularOrderName) ||
+        // TYLKO gdy nazwa produktu zawiera się w zamówieniu (nie odwrotnie!)
+        return normalizedOrderName.contains(productName) ||
+            normalizedOrderName.contains(singularProductName) ||
             singularOrderName.contains(productName) ||
-            singularProductName.contains(singularOrderName) ||
             singularOrderName.contains(singularProductName);
       });
     } catch (e) {}
