@@ -57,20 +57,30 @@ class MatchOrderItems implements UseCase<List<MatchedOrderItem>, MatchOrderParam
       });
     } catch (e) {}
 
-    // Próba 3: Produkt zawiera się w zamówieniu (NIE odwrotnie!)
-    // Przykład: "Apple AirPods" w zamówieniu powinno znaleźć produkt "Apple AirPods" w bazie
-    // ALE NIE powinno znaleźć samego "Apple"
     try {
-      return products.firstWhere((p) {
-        final productName = _normalizeText(p.title);
+      // Znajdź najdłuższe dopasowanie (aby "Apple AirPods" nie matchowało z samym "Apple")
+      Product? bestMatch;
+      int longestMatchLength = 0;
+
+      for (var product in products) {
+        final productName = _normalizeText(product.title);
         final singularProductName = _removePluralSuffix(productName);
 
-        // TYLKO gdy nazwa produktu zawiera się w zamówieniu (nie odwrotnie!)
-        return normalizedOrderName.contains(productName) ||
+        // Sprawdź czy zamówienie zawiera nazwę produktu
+        if (normalizedOrderName.contains(productName) ||
             normalizedOrderName.contains(singularProductName) ||
             singularOrderName.contains(productName) ||
-            singularOrderName.contains(singularProductName);
-      });
+            singularOrderName.contains(singularProductName)) {
+          // Wybierz najdłuższe dopasowanie
+          final matchLength = productName.length;
+          if (matchLength > longestMatchLength) {
+            longestMatchLength = matchLength;
+            bestMatch = product;
+          }
+        }
+      }
+
+      if (bestMatch != null) return bestMatch;
     } catch (e) {}
 
     // Próba 4: Dopasowanie na podstawie wszystkich znaczących słów
@@ -102,7 +112,7 @@ class MatchOrderItems implements UseCase<List<MatchedOrderItem>, MatchOrderParam
         }
 
         // Wymagane dopasowanie co najmniej wszystkich słów produktu
-        return productWordsMatched == productWords.length && productWords.length >= 1;
+        return productWordsMatched == productWords.length && productWords.isNotEmpty;
       });
     } catch (e) {}
 
@@ -116,7 +126,7 @@ class MatchOrderItems implements UseCase<List<MatchedOrderItem>, MatchOrderParam
   String _removePluralSuffix(String text) {
     // Usuń typowe końcówki liczby mnogiej w języku angielskim
     if (text.endsWith('ies')) {
-      return text.substring(0, text.length - 3) + 'y';
+      return '${text.substring(0, text.length - 3)}y';
     }
     if (text.endsWith('es')) {
       return text.substring(0, text.length - 2);

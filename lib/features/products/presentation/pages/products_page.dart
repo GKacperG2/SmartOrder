@@ -5,7 +5,7 @@ import 'package:smartorder/features/products/presentation/bloc/products_event.da
 import 'package:smartorder/features/products/presentation/bloc/products_state.dart';
 
 class ProductsPage extends StatefulWidget {
-  const ProductsPage({Key? key}) : super(key: key);
+  const ProductsPage({super.key});
 
   @override
   State<ProductsPage> createState() => _ProductsPageState();
@@ -41,19 +41,19 @@ class _ProductsPageState extends State<ProductsPage> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(Icons.error_outline, size: 64, color: Colors.red),
-                    SizedBox(height: 16),
+                    const Icon(Icons.error_outline, size: 64, color: Colors.red),
+                    const SizedBox(height: 16),
                     Text(
                       state.message,
                       textAlign: TextAlign.center,
-                      style: TextStyle(fontSize: 16),
+                      style: const TextStyle(fontSize: 16),
                     ),
-                    SizedBox(height: 24),
+                    const SizedBox(height: 24),
                     ElevatedButton(
                       onPressed: () {
                         BlocProvider.of<ProductsBloc>(context).add(GetProductsEvent());
                       },
-                      child: Text('Spróbuj ponownie'),
+                      child: const Text('Spróbuj ponownie'),
                     ),
                   ],
                 ),

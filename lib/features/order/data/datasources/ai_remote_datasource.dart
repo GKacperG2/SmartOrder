@@ -16,7 +16,7 @@ class AiRemoteDataSourceImpl implements AiRemoteDataSource {
   @override
   Future<List<OrderItemModel>> analyzeOrderText(String text) async {
     const url = 'https://openrouter.ai/api/v1/chat/completions';
-    final apiKey = AppConfig.openRouterApiKey;
+    const apiKey = AppConfig.openRouterApiKey;
 
     if (apiKey.isEmpty) {
       throw AiException('API key is missing.');
@@ -51,7 +51,7 @@ class AiRemoteDataSourceImpl implements AiRemoteDataSource {
       } else {
         throw ServerException();
       }
-    } on DioError catch (e) {
+    } on DioException catch (e) {
       throw AiException(e.message ?? 'AI service error');
     }
   }

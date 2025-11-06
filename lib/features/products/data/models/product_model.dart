@@ -5,10 +5,10 @@ part 'product_model.g.dart';
 
 @JsonSerializable()
 class ProductModel extends Product {
-  const ProductModel({required int id, required String title, required double price})
-    : super(id: id, title: title, price: price);
+  const ProductModel({required super.id, required super.title, required super.price});
 
   factory ProductModel.fromJson(Map<String, dynamic> json) => _$ProductModelFromJson(json);
 
+  @override
   Map<String, dynamic> toJson() => _$ProductModelToJson(this);
 }

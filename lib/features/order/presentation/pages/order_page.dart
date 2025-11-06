@@ -11,7 +11,7 @@ import 'package:smartorder/features/products/presentation/bloc/products_event.da
 import 'package:smartorder/features/products/presentation/bloc/products_state.dart';
 
 class OrderPage extends StatefulWidget {
-  const OrderPage({Key? key}) : super(key: key);
+  const OrderPage({super.key});
 
   @override
   State<OrderPage> createState() => _OrderPageState();
@@ -53,19 +53,19 @@ class _OrderPageState extends State<OrderPage> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(Icons.error_outline, size: 64, color: Colors.red),
-                    SizedBox(height: 16),
+                    const Icon(Icons.error_outline, size: 64, color: Colors.red),
+                    const SizedBox(height: 16),
                     Text(
                       productsState.message,
                       textAlign: TextAlign.center,
-                      style: TextStyle(fontSize: 16),
+                      style: const TextStyle(fontSize: 16),
                     ),
-                    SizedBox(height: 24),
+                    const SizedBox(height: 24),
                     ElevatedButton(
                       onPressed: () {
                         BlocProvider.of<ProductsBloc>(context).add(GetProductsEvent());
                       },
-                      child: Text('Spróbuj ponownie'),
+                      child: const Text('Spróbuj ponownie'),
                     ),
                   ],
                 ),
@@ -75,7 +75,7 @@ class _OrderPageState extends State<OrderPage> {
 
           // Pokazuj loading podczas ładowania produktów
           if (productsState is ProductsLoading) {
-            return Center(
+            return const Center(
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -94,7 +94,7 @@ class _OrderPageState extends State<OrderPage> {
                   SnackBar(
                     content: Text(state.message),
                     backgroundColor: Colors.red,
-                    duration: Duration(seconds: 5),
+                    duration: const Duration(seconds: 5),
                     action: SnackBarAction(
                       label: 'Zamknij',
                       textColor: Colors.white,

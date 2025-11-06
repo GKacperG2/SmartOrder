@@ -19,10 +19,10 @@ class ProductRepositoryImpl implements ProductRepository {
         final remoteProducts = await remoteDataSource.getProducts();
         return Right(remoteProducts);
       } on ServerException {
-        return Left(ServerFailure());
+        return const Left(ServerFailure());
       }
     } else {
-      return Left(NetworkFailure());
+      return const Left(NetworkFailure());
     }
   }
 }

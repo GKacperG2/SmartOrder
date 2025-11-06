@@ -21,10 +21,10 @@ class OrderRepositoryImpl implements OrderRepository {
       } on AiException catch (e) {
         return Left(AiFailure(e.message));
       } on ServerException {
-        return Left(ServerFailure());
+        return const Left(ServerFailure());
       }
     } else {
-      return Left(NetworkFailure());
+      return const Left(NetworkFailure());
     }
   }
 }
